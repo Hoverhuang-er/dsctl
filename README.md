@@ -1,2 +1,3 @@
 # dsctl
-DevOps All In One Platform Setup
+
+Build DevOps workflow into one portal which you need setup
