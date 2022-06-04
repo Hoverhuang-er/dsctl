@@ -1,0 +1,29 @@
+apiVersion: extensions/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Task.AppName }}
+  name: {{ .Task.AppName }}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Task.AppName }}
+      name: {{ .Task.AppName }}
+    spec:
+      containers:
+        - name: {{ .Task.AppName }}
+          image: {{ .Task.ImageUri }}
+          resources:
+            requests:
+              cpu: {{ .Task.CPU }}
+              memory: {{ .Task.Memory }}
+          volumeMounts:
+            - name: {{ .Task.PVCName }}
+              mountPath: {{ .Task.PVCName.MountPath }}
+      volumes:
+        - name: {{ .Task.PVCName }}
+          gcePersistentDisk:
+            pdName: {{ .Task.PVCName }}
+            fsType: {{ .Task.PVTypeName }}

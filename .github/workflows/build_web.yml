@@ -1,0 +1,31 @@
+name: Build_CLI
+
+on:
+  push:
+    # run only against tags
+    branches:
+      - build_with_mainfest
+
+# permissions:
+#   contents: write
+#   # packages: write
+#   # issues: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: Fetch all tags
+        run: git fetch --force --tags
+      -
+        name: Set up Go
+        uses: actions/setup-node
+        with:
+          node-version: '>=17.0.0'
+        run: yarn build
