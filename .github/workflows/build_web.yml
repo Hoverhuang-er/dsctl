@@ -4,27 +4,96 @@ on:
   push:
     # run only against tags
     branches:
-      - build_with_mainfest
+      - build_*
 
 # permissions:
 #   contents: write
 #   # packages: write
 #   # issues: write
 
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
-  goreleaser:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node_version: [12, 14, 16, 17]
+        include:
+          - os: macos-latest
+            node_version: 16
+          - os: windows-latest
+            node_version: 16
+      fail-fast: false
+
+    name: "Build&Test: node-${{ matrix.node_version }}, ${{ matrix.os }}"
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 6
+
+      - name: Set node version to ${{ matrix.node_version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: "pnpm"
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Build vite
+        run: pnpm run ci-build-vite
+
+      - name: Build plugin-vue
+        run: pnpm run build-plugin-vue
+
+      - name: Build plugin-react
+        run: pnpm run build-plugin-react
+
+      - name: Test serve
+        run: pnpm run test-serve -- --runInBand
+
+      - name: Test build
+        run: pnpm run test-build -- --runInBand
+
+  lint:
+    runs-on: ubuntu-latest
+    name: "Lint: node-16, ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      -
-        name: Fetch all tags
-        run: git fetch --force --tags
-      -
-        name: Set up Go
-        uses: actions/setup-node
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          node-version: '>=17.0.0'
+          version: 6
+
+      - name: Set node version to 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: "pnpm"
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Prepare
+        run: |
+          pnpm run ci-build-vite
+          pnpm run build-plugin-vue
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Check formatting
+        run: pnpm prettier --check .on: '>=17.0.0'
