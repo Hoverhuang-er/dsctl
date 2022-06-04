@@ -49,22 +49,22 @@ jobs:
           cache: "pnpm"
 
       - name: Install deps
-        run: pnpm install
+        run: cd web/ && pnpm install
 
       - name: Build vite
-        run: pnpm run ci-build-vite
+        run: cd web/ && pnpm run ci-build-vite
 
       - name: Build plugin-vue
-        run: pnpm run build-plugin-vue
+        run: cd web/ && pnpm run build-plugin-vue
 
       - name: Build plugin-react
-        run: pnpm run build-plugin-react
+        run: cd web/ && pnpm run build-plugin-react
 
       - name: Test serve
-        run: pnpm run test-serve -- --runInBand
+        run: cd web/ && pnpm run test-serve -- --runInBand
 
       - name: Test build
-        run: pnpm run test-build -- --runInBand
+        run: cd web/ && pnpm run test-build -- --runInBand
 
   lint:
     runs-on: ubuntu-latest
@@ -86,11 +86,11 @@ jobs:
           cache: "pnpm"
 
       - name: Install deps
-        run: pnpm install
+        run: cd web/ && pnpm install
 
       - name: Prepare
         run: |
-          pnpm run ci-build-vite
-          pnpm run build-plugin-vue
+          cd web/ && pnpm run ci-build-vite
+          cd web/ && pnpm run build-plugin-vue
       - name: Lint
-        run: pnpm run lint
+        run: cd web/ && pnpm run lint
